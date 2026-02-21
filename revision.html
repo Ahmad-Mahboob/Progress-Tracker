@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quran Revision | Ramadan Study Progress Tracker</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen">
+  <nav class="bg-white border-b border-slate-200">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <h1 class="text-lg md:text-xl font-semibold">Ramadan Study Progress Tracker</h1>
+        <div class="flex items-center gap-2 text-sm">
+          <a href="./index.html" class="px-3 py-1.5 rounded-md border border-slate-300 text-slate-700 hover:bg-slate-100">Dashboard</a>
+          <a href="./revision.html" class="px-3 py-1.5 rounded-md bg-slate-800 text-white">Quran Revision</a>
+        </div>
+      </div>
+      <button id="logoutBtn" class="px-3 py-2 text-sm font-medium rounded-md bg-slate-800 text-white hover:bg-slate-700">Logout</button>
+    </div>
+  </nav>
+
+  <main class="max-w-6xl mx-auto px-4 py-6 space-y-6">
+    <section class="bg-white rounded-xl border border-slate-200 p-4 md:p-6">
+      <h2 class="text-lg font-semibold mb-4">Add Revision Entry</h2>
+      <form id="revisionForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <label class="block">
+          <span class="text-sm font-medium">Date</span>
+          <input id="revisionDate" type="date" required class="mt-1 w-full rounded-md border-slate-300 focus:border-slate-500 focus:ring-slate-500" />
+        </label>
+        <label class="block">
+          <span class="text-sm font-medium">Parah number</span>
+          <input id="parahNumber" type="number" min="1" max="30" required class="mt-1 w-full rounded-md border-slate-300 focus:border-slate-500 focus:ring-slate-500" />
+        </label>
+        <label class="block">
+          <span class="text-sm font-medium">Rukooh number</span>
+          <input id="rukoohNumber" type="number" min="1" required class="mt-1 w-full rounded-md border-slate-300 focus:border-slate-500 focus:ring-slate-500" />
+        </label>
+        <label class="block md:col-span-2">
+          <span class="text-sm font-medium">Notes</span>
+          <textarea id="revisionNotes" rows="3" class="mt-1 w-full rounded-md border-slate-300 focus:border-slate-500 focus:ring-slate-500" placeholder="Optional notes..."></textarea>
+        </label>
+        <div class="md:col-span-2 flex items-center gap-3">
+          <button id="saveRevisionBtn" type="submit" class="px-4 py-2 rounded-md bg-emerald-600 text-white font-medium hover:bg-emerald-500">Save Revision</button>
+          <p id="revisionFormMessage" class="text-sm"></p>
+        </div>
+      </form>
+    </section>
+
+    <section>
+      <h2 class="text-lg font-semibold mb-3">Revision Dashboard</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+        <div class="bg-white border border-slate-200 rounded-xl p-4">
+          <p class="text-sm text-slate-500">Revision Sessions This Week</p>
+          <p id="revisionWeekTotal" class="text-xl font-semibold">0</p>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-xl p-4">
+          <p class="text-sm text-slate-500">Last Revised</p>
+          <p id="lastRevised" class="text-xl font-semibold">-</p>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-xl p-4">
+          <p class="text-sm text-slate-500">Progress Summary</p>
+          <p id="revisionSummary" class="text-xl font-semibold">-</p>
+        </div>
+      </div>
+      <p id="revisionInsight" class="mt-4 text-sm md:text-base bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-md p-3">No revision data yet.</p>
+    </section>
+
+    <section class="bg-white rounded-xl border border-slate-200 p-4 md:p-6 overflow-auto">
+      <h2 class="text-lg font-semibold mb-4">Revision History</h2>
+      <table class="min-w-full text-sm">
+        <thead>
+          <tr class="border-b border-slate-200 text-left">
+            <th class="py-2 pr-4">Date</th>
+            <th class="py-2 pr-4">Parah</th>
+            <th class="py-2 pr-4">Rukooh</th>
+            <th class="py-2 pr-4">Notes</th>
+            <th class="py-2 pr-4">Edit</th>
+            <th class="py-2 pr-4">Delete</th>
+          </tr>
+        </thead>
+        <tbody id="revisionHistoryBody"></tbody>
+      </table>
+    </section>
+  </main>
+
+  <div id="revisionEditModal" class="fixed inset-0 bg-slate-900/50 hidden items-center justify-center p-4 z-50">
+    <div class="w-full max-w-2xl bg-white rounded-xl border border-slate-200 p-5">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold">Edit Revision Entry</h3>
+        <button id="closeRevisionModalBtn" type="button" class="text-slate-500 hover:text-slate-700 text-sm">Close</button>
+      </div>
+
+      <form id="editRevisionForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <input id="editRevisionId" type="hidden" />
+        <label class="block">
+          <span class="text-sm font-medium">Date</span>
+          <input id="editRevisionDate" type="date" required class="mt-1 w-full rounded-md border-slate-300 focus:border-slate-500 focus:ring-slate-500" />
+        </label>
+        <label class="block">
+          <span class="text-sm font-medium">Parah number</span>
+          <input id="editParahNumber" type="number" min="1" max="30" required class="mt-1 w-full rounded-md border-slate-300 focus:border-slate-500 focus:ring-slate-500" />
+        </label>
+        <label class="block">
+          <span class="text-sm font-medium">Rukooh number</span>
+          <input id="editRukoohNumber" type="number" min="1" required class="mt-1 w-full rounded-md border-slate-300 focus:border-slate-500 focus:ring-slate-500" />
+        </label>
+        <label class="block md:col-span-2">
+          <span class="text-sm font-medium">Notes</span>
+          <textarea id="editRevisionNotes" rows="3" class="mt-1 w-full rounded-md border-slate-300 focus:border-slate-500 focus:ring-slate-500"></textarea>
+        </label>
+        <div class="md:col-span-2 flex items-center gap-3">
+          <button id="saveRevisionEditBtn" type="submit" class="px-4 py-2 rounded-md bg-slate-800 text-white font-medium hover:bg-slate-700">Save Changes</button>
+          <p id="revisionEditMessage" class="text-sm"></p>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script type="module" src="./js/revision.js"></script>
+</body>
+</html>
