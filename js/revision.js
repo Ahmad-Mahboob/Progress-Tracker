@@ -20,6 +20,22 @@ function setMessage(id, message, isError = false) {
   el.className = isError ? "text-sm text-red-600" : "text-sm text-emerald-600";
 }
 
+function setPageLoading(isLoading, message = "Loading revision progress...") {
+  const loader = document.getElementById("revisionPageLoader");
+  const loaderText = document.getElementById("revisionPageLoaderText");
+  if (!loader) return;
+
+  if (loaderText) loaderText.textContent = message;
+
+  if (isLoading) {
+    loader.classList.remove("hidden");
+    loader.classList.add("flex");
+  } else {
+    loader.classList.remove("flex");
+    loader.classList.add("hidden");
+  }
+}
+
 function getRevisionInsight(weeklyCount, lastDate) {
   if (weeklyCount >= 4) {
     return "Great revision consistency.";
@@ -164,10 +180,15 @@ async function deleteRevisionEntry(id) {
 }
 
 async function loadRevisionPage() {
-  const [allRows, weeklyRows] = await Promise.all([fetchRevisionRows(), fetchWeeklyRevisionRows()]);
-  revisionEntries = allRows;
-  renderRevisionTable(allRows);
-  renderRevisionStats(allRows, weeklyRows);
+  setPageLoading(true, "Loading revision progress...");
+  try {
+    const [allRows, weeklyRows] = await Promise.all([fetchRevisionRows(), fetchWeeklyRevisionRows()]);
+    revisionEntries = allRows;
+    renderRevisionTable(allRows);
+    renderRevisionStats(allRows, weeklyRows);
+  } finally {
+    setPageLoading(false);
+  }
 }
 
 function openEditModal(entry) {
@@ -212,6 +233,7 @@ function setupCreateForm() {
     try {
       submitBtn.disabled = true;
       submitBtn.textContent = "Saving...";
+      setPageLoading(true, "Saving revision entry...");
       await createRevisionEntry(payload);
       setMessage("revisionFormMessage", "Revision entry saved successfully.");
       form.reset();
@@ -222,6 +244,7 @@ function setupCreateForm() {
     } finally {
       submitBtn.disabled = false;
       submitBtn.textContent = "Save Revision";
+      setPageLoading(false);
     }
   });
 }
@@ -246,11 +269,16 @@ function setupHistoryActions() {
     try {
       deleteBtn.disabled = true;
       deleteBtn.textContent = "Deleting...";
+      setPageLoading(true, "Deleting revision entry...");
       await deleteRevisionEntry(id);
       await loadRevisionPage();
       setMessage("revisionFormMessage", "Revision entry deleted.");
     } catch (error) {
       setMessage("revisionFormMessage", error.message || "Failed to delete entry.", true);
+    } finally {
+      deleteBtn.disabled = false;
+      deleteBtn.textContent = "Delete";
+      setPageLoading(false);
     }
   });
 }
@@ -290,6 +318,7 @@ function setupEditForm() {
     try {
       saveBtn.disabled = true;
       saveBtn.textContent = "Saving...";
+      setPageLoading(true, "Updating revision entry...");
       await updateRevisionEntry(payload);
       setMessage("revisionEditMessage", "Revision entry updated.");
       await loadRevisionPage();
@@ -299,6 +328,7 @@ function setupEditForm() {
     } finally {
       saveBtn.disabled = false;
       saveBtn.textContent = "Save Changes";
+      setPageLoading(false);
     }
   });
 }

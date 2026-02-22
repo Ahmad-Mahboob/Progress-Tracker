@@ -138,6 +138,20 @@
     </main>
 
     <div
+      id="revisionPageLoader"
+      class="fixed inset-0 bg-white/95 hidden items-center justify-center p-4 z-[60]"
+    >
+      <div class="flex flex-col items-center gap-3 text-slate-700">
+        <div
+          class="w-8 h-8 border-4 border-slate-300 border-t-slate-700 rounded-full animate-spin"
+        ></div>
+        <p id="revisionPageLoaderText" class="text-sm font-medium">
+          Loading revision progress...
+        </p>
+      </div>
+    </div>
+
+    <div
       id="revisionEditModal"
       class="fixed inset-0 bg-slate-900/50 hidden items-center justify-center p-4 z-50"
     >
