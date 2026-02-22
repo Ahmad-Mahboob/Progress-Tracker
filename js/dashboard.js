@@ -179,17 +179,16 @@ function setFormMessage(message, isError = false) {
 function setDashboardLoading(isLoading, message = "Loading dashboard progress...") {
   const loader = document.getElementById("dashboardLoader");
   const loaderText = document.getElementById("dashboardLoaderText");
-  const mainSections = document.querySelectorAll("main > section:not(#dashboardLoader)");
 
   if (!loader) return;
   if (loaderText) loaderText.textContent = message;
 
   if (isLoading) {
     loader.classList.remove("hidden");
-    mainSections.forEach((section) => section.classList.add("opacity-60", "pointer-events-none"));
+    loader.classList.add("flex");
   } else {
+    loader.classList.remove("flex");
     loader.classList.add("hidden");
-    mainSections.forEach((section) => section.classList.remove("opacity-60", "pointer-events-none"));
   }
 }
 
