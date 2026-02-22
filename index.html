@@ -29,16 +29,33 @@
             >
           </div>
         </div>
-        <button
-          id="logoutBtn"
-          class="px-3 py-2 text-sm font-medium rounded-md bg-slate-800 text-white hover:bg-slate-700"
-        >
-          Logout
-        </button>
+        <div class="flex items-center gap-3">
+          <p id="userEmail" class="hidden md:block text-sm text-slate-600"></p>
+          <button
+            id="logoutBtn"
+            class="px-3 py-2 text-sm font-medium rounded-md bg-slate-800 text-white hover:bg-slate-700"
+          >
+            Logout
+          </button>
+        </div>
       </div>
     </nav>
 
     <main class="max-w-6xl mx-auto px-4 py-6 space-y-6">
+      <section
+        id="dashboardLoader"
+        class="hidden bg-white rounded-xl border border-slate-200 p-4 md:p-6"
+      >
+        <div class="flex items-center gap-3 text-slate-600">
+          <div
+            class="w-5 h-5 border-2 border-slate-300 border-t-slate-700 rounded-full animate-spin"
+          ></div>
+          <p id="dashboardLoaderText" class="text-sm font-medium">
+            Loading dashboard progress...
+          </p>
+        </div>
+      </section>
+
       <section class="bg-white rounded-xl border border-slate-200 p-4 md:p-6">
         <h2 class="text-lg font-semibold mb-4">Add Daily Progress</h2>
         <form id="progressForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">

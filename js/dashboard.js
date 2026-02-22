@@ -153,22 +153,50 @@ async function fetchWeeklyRevisionSessionCount() {
 }
 
 async function loadDashboard() {
-  const weeklyRows = await fetchEntriesForCurrentWeek();
-  const allRows = await fetchAllEntries();
-  const revisionSessions = await fetchWeeklyRevisionSessionCount();
-  const totals = calculateTotals(weeklyRows);
-  totals.revisionSessions = revisionSessions;
-  historyEntries = allRows;
+  setDashboardLoading(true);
+  try {
+    const weeklyRows = await fetchEntriesForCurrentWeek();
+    const allRows = await fetchAllEntries();
+    const revisionSessions = await fetchWeeklyRevisionSessionCount();
+    const totals = calculateTotals(weeklyRows);
+    totals.revisionSessions = revisionSessions;
+    historyEntries = allRows;
 
-  renderSummaryCards(totals);
-  renderWeeklyChart(totals);
-  renderHistory(allRows);
+    renderSummaryCards(totals);
+    renderWeeklyChart(totals);
+    renderHistory(allRows);
+  } finally {
+    setDashboardLoading(false);
+  }
 }
 
 function setFormMessage(message, isError = false) {
   const messageEl = document.getElementById("formMessage");
   messageEl.textContent = message;
   messageEl.className = isError ? "text-sm text-red-600" : "text-sm text-emerald-600";
+}
+
+function setDashboardLoading(isLoading, message = "Loading dashboard progress...") {
+  const loader = document.getElementById("dashboardLoader");
+  const loaderText = document.getElementById("dashboardLoaderText");
+  const mainSections = document.querySelectorAll("main > section:not(#dashboardLoader)");
+
+  if (!loader) return;
+  if (loaderText) loaderText.textContent = message;
+
+  if (isLoading) {
+    loader.classList.remove("hidden");
+    mainSections.forEach((section) => section.classList.add("opacity-60", "pointer-events-none"));
+  } else {
+    loader.classList.add("hidden");
+    mainSections.forEach((section) => section.classList.remove("opacity-60", "pointer-events-none"));
+  }
+}
+
+function setLoggedInUserEmail(user) {
+  const emailEl = document.getElementById("userEmail");
+  if (!emailEl) return;
+  emailEl.textContent = user?.email ? `Logged in: ${user.email}` : "Logged in";
 }
 
 function setupForm() {
@@ -195,6 +223,7 @@ function setupForm() {
         submitBtn.disabled = true;
         submitBtn.textContent = "Saving...";
       }
+      setDashboardLoading(true, "Saving progress...");
       await saveProgress(payload);
       setFormMessage("Progress saved successfully.");
       form.reset();
@@ -338,15 +367,18 @@ function setupLogout() {
 async function init() {
   const user = await requireAuth();
   if (!user) return;
+  setLoggedInUserEmail(user);
   setupForm();
   setupHistoryActions();
   setupEditModal();
   setupLogout();
 
   try {
+    setDashboardLoading(true, "Loading dashboard progress...");
     await loadDashboard();
   } catch (error) {
     setFormMessage(error.message || "Failed to load dashboard.", true);
+    setDashboardLoading(false);
   }
 }
 
