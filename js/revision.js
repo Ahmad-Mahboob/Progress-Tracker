@@ -36,6 +36,20 @@ function setPageLoading(isLoading, message = "Loading revision progress...") {
   }
 }
 
+function setInlineRevisionLoading(isLoading, message = "Updating revision progress...") {
+  const loader = document.getElementById("revisionInlineLoader");
+  const loaderText = document.getElementById("revisionInlineLoaderText");
+  if (!loader) return;
+
+  if (loaderText) loaderText.textContent = message;
+
+  if (isLoading) {
+    loader.classList.remove("hidden");
+  } else {
+    loader.classList.add("hidden");
+  }
+}
+
 function getRevisionInsight(weeklyCount, lastDate) {
   if (weeklyCount >= 4) {
     return "Great revision consistency.";
@@ -179,15 +193,21 @@ async function deleteRevisionEntry(id) {
   if (error) throw new Error(error.message);
 }
 
-async function loadRevisionPage() {
-  setPageLoading(true, "Loading revision progress...");
+async function loadRevisionPage(options = {}) {
+  const mode = options.mode || "none";
+  const message = options.message || "Loading revision progress...";
+
+  if (mode === "overlay") setPageLoading(true, message);
+  if (mode === "inline") setInlineRevisionLoading(true, message);
+
   try {
     const [allRows, weeklyRows] = await Promise.all([fetchRevisionRows(), fetchWeeklyRevisionRows()]);
     revisionEntries = allRows;
     renderRevisionTable(allRows);
     renderRevisionStats(allRows, weeklyRows);
   } finally {
-    setPageLoading(false);
+    if (mode === "overlay") setPageLoading(false);
+    if (mode === "inline") setInlineRevisionLoading(false);
   }
 }
 
@@ -233,18 +253,16 @@ function setupCreateForm() {
     try {
       submitBtn.disabled = true;
       submitBtn.textContent = "Saving...";
-      setPageLoading(true, "Saving revision entry...");
       await createRevisionEntry(payload);
       setMessage("revisionFormMessage", "Revision entry saved successfully.");
       form.reset();
       dateInput.value = toISODate(new Date());
-      await loadRevisionPage();
+      await loadRevisionPage({ mode: "inline", message: "Updating revision progress..." });
     } catch (error) {
       setMessage("revisionFormMessage", error.message || "Failed to save revision entry.", true);
     } finally {
       submitBtn.disabled = false;
       submitBtn.textContent = "Save Revision";
-      setPageLoading(false);
     }
   });
 }
@@ -269,16 +287,14 @@ function setupHistoryActions() {
     try {
       deleteBtn.disabled = true;
       deleteBtn.textContent = "Deleting...";
-      setPageLoading(true, "Deleting revision entry...");
       await deleteRevisionEntry(id);
-      await loadRevisionPage();
+      await loadRevisionPage({ mode: "inline", message: "Updating revision progress..." });
       setMessage("revisionFormMessage", "Revision entry deleted.");
     } catch (error) {
       setMessage("revisionFormMessage", error.message || "Failed to delete entry.", true);
     } finally {
       deleteBtn.disabled = false;
       deleteBtn.textContent = "Delete";
-      setPageLoading(false);
     }
   });
 }
@@ -318,17 +334,15 @@ function setupEditForm() {
     try {
       saveBtn.disabled = true;
       saveBtn.textContent = "Saving...";
-      setPageLoading(true, "Updating revision entry...");
       await updateRevisionEntry(payload);
       setMessage("revisionEditMessage", "Revision entry updated.");
-      await loadRevisionPage();
+      await loadRevisionPage({ mode: "inline", message: "Updating revision progress..." });
       setTimeout(closeEditModal, 500);
     } catch (error) {
       setMessage("revisionEditMessage", error.message || "Failed to update entry.", true);
     } finally {
       saveBtn.disabled = false;
       saveBtn.textContent = "Save Changes";
-      setPageLoading(false);
     }
   });
 }
@@ -348,7 +362,7 @@ async function init() {
   setupLogout();
 
   try {
-    await loadRevisionPage();
+    await loadRevisionPage({ mode: "overlay", message: "Loading revision progress..." });
   } catch (error) {
     setMessage("revisionFormMessage", error.message || "Failed to load revision data.", true);
   }

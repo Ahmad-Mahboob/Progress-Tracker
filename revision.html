@@ -95,6 +95,12 @@
 
       <section>
         <h2 class="text-lg font-semibold mb-3">Revision Dashboard</h2>
+        <div id="revisionInlineLoader" class="hidden mb-3">
+          <div class="inline-flex items-center gap-2 text-slate-600 bg-slate-100 rounded-md px-3 py-2">
+            <div class="w-4 h-4 border-2 border-slate-300 border-t-slate-700 rounded-full animate-spin"></div>
+            <p id="revisionInlineLoaderText" class="text-sm font-medium">Updating revision progress...</p>
+          </div>
+        </div>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
           <div class="bg-white border border-slate-200 rounded-xl p-4">
             <p class="text-sm text-slate-500">Revision Sessions This Week</p>

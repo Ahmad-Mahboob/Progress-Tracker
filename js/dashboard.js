@@ -152,8 +152,29 @@ async function fetchWeeklyRevisionSessionCount() {
   return data?.length || 0;
 }
 
-async function loadDashboard() {
-  setDashboardLoading(true);
+function setInlineDashboardLoading(isLoading, message = "Updating progress graph...") {
+  const loader = document.getElementById("dashboardInlineLoader");
+  const loaderText = document.getElementById("dashboardInlineLoaderText");
+  const canvas = document.getElementById("weeklyChart");
+  if (!loader) return;
+  if (loaderText) loaderText.textContent = message;
+
+  if (isLoading) {
+    loader.classList.remove("hidden");
+    if (canvas) canvas.classList.add("opacity-30");
+  } else {
+    loader.classList.add("hidden");
+    if (canvas) canvas.classList.remove("opacity-30");
+  }
+}
+
+async function loadDashboard(options = {}) {
+  const mode = options.mode || "none";
+  const message = options.message || "Loading dashboard progress...";
+
+  if (mode === "overlay") setDashboardLoading(true, message);
+  if (mode === "inline") setInlineDashboardLoading(true, message);
+
   try {
     const weeklyRows = await fetchEntriesForCurrentWeek();
     const allRows = await fetchAllEntries();
@@ -166,7 +187,8 @@ async function loadDashboard() {
     renderWeeklyChart(totals);
     renderHistory(allRows);
   } finally {
-    setDashboardLoading(false);
+    if (mode === "overlay") setDashboardLoading(false);
+    if (mode === "inline") setInlineDashboardLoading(false);
   }
 }
 
@@ -222,12 +244,11 @@ function setupForm() {
         submitBtn.disabled = true;
         submitBtn.textContent = "Saving...";
       }
-      setDashboardLoading(true, "Saving progress...");
       await saveProgress(payload);
       setFormMessage("Progress saved successfully.");
       form.reset();
       if (dateInput) dateInput.value = toISODate(new Date());
-      await loadDashboard();
+      await loadDashboard({ mode: "inline", message: "Updating progress graph..." });
     } catch (error) {
       setFormMessage(error.message || "Failed to save progress.", true);
     } finally {
@@ -345,7 +366,7 @@ function setupEditModal() {
       }
       await updateProgressEntry(payload);
       setEditMessage("Progress updated successfully.");
-      await loadDashboard();
+      await loadDashboard({ mode: "inline", message: "Updating progress graph..." });
       setTimeout(closeEditModal, 500);
     } catch (error) {
       setEditMessage(error.message || "Failed to update progress.", true);
@@ -373,11 +394,9 @@ async function init() {
   setupLogout();
 
   try {
-    setDashboardLoading(true, "Loading dashboard progress...");
-    await loadDashboard();
+    await loadDashboard({ mode: "overlay", message: "Loading dashboard progress..." });
   } catch (error) {
     setFormMessage(error.message || "Failed to load dashboard.", true);
-    setDashboardLoading(false);
   }
 }
 
